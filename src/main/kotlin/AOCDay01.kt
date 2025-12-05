@@ -1,7 +1,6 @@
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
 import kotlin.math.abs
-import kotlin.math.floor
 
 class AOCDay01(val input: List<String>) {
 
@@ -13,7 +12,7 @@ class AOCDay01(val input: List<String>) {
         this.moves = input.map {it: String -> it.substring(1).toLong()}
     }
 
-    fun rotate() {
+    fun rotate(): Long {
         var position = 50L
         var count = 0L
         for (i in 0..this.directions.lastIndex) {
@@ -26,38 +25,39 @@ class AOCDay01(val input: List<String>) {
             if (position < 0) position += 100
             if (position == 0L) count++
         }
-        println(count)
+        return count
     }
 
-    fun rotateAllClicks() {
-        var previousPosition = 50L
+    fun rotateAllClicks(): Long {
         var currentPosition = 50L
+        var prevPosition = 50L
+        var circleSize = 100L
         var count = 0L
         for (i in 0..this.directions.lastIndex) {
-            if (this.directions[i] == "L")
-                currentPosition -= this.moves[i]
-            else
-                currentPosition += this.moves[i]
+            val numTicks = this.moves[i]
+            val direction = this.directions[i]
+            for (i in 1..numTicks) {
+                if (direction == "L")
+                    currentPosition -= 1
+                else
+                    currentPosition += 1
 
-            if (currentPosition == 0L) count++
-            else if (currentPosition < 0 && currentPosition >= -99 && previousPosition > 0) {
-                count++
-            } else if (currentPosition < -99) {
-                count += abs(currentPosition / 100) + 1
-            } else {
-                count += abs(currentPosition / 100)
+                if (currentPosition % 100 == 0L)
+                    count++
             }
-            currentPosition %= 100
-            if (currentPosition < 0) currentPosition += 100
-            previousPosition = currentPosition
+
+            if (currentPosition >= 0)
+                currentPosition %= circleSize
+            else
+                currentPosition = circleSize + (currentPosition % circleSize)
         }
-        println(count)
+        return count
     }
 }
 
 fun main() {
-    val fileInput = Path("src/main/resources/inputDay01b.txt").readLines()
+    val fileInput = Path("src/main/resources/inputDay01a.txt").readLines()
     val day01 = AOCDay01(fileInput)
-    day01.rotate()
-    day01.rotateAllClicks()
+    println(day01.rotate())
+    println(day01.rotateAllClicks())
 }
