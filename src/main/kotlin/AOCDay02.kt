@@ -11,34 +11,41 @@ class AOCDay02(val input: String) {
             .map { range -> range.split("-").toMutableList() }.toMutableList()
     }
 
-    fun sumRepeatsInRange(start: String, end: String): BigInteger {
-        var sum = BigInteger.ZERO
+    fun findRepeatsInRange(start: String, end: String, repeatSize: Int): List<BigInteger> {
+        var repeatedNumbers = mutableListOf<BigInteger>()
         var begin = start
-        if (start.length % 2 != 0)
+        if (start.length % repeatSize != 0) {
             begin = "1" + "0".repeat(start.length)
+            while (begin.length % repeatSize != 0)
+                begin += "0"
+        }
 
         val stop = end.toBigInteger()
-        var base = begin.take(begin.length / 2)
-        var repeatedNumber = base.repeat(2).toBigInteger()
+        var base = begin.take(begin.length / repeatSize)
+        var repeatedNumber = base.repeat(repeatSize).toBigInteger()
 
-        if (repeatedNumber < begin.toBigInteger()) {
+        if (repeatedNumber < start.toBigInteger()) {
             base = (base.toLong() + 1L).toString()
-            repeatedNumber = base.repeat(2).toBigInteger()
+            repeatedNumber = base.repeat(repeatSize).toBigInteger()
         }
 
         while (repeatedNumber <= stop ) {
-            sum = sum.add(repeatedNumber)
+            repeatedNumbers.add(repeatedNumber)
             base = (base.toLong() + 1L).toString()
-            repeatedNumber = base.repeat(2).toBigInteger()
+            repeatedNumber = base.repeat(repeatSize).toBigInteger()
         }
 
-        return sum
+        return repeatedNumbers
     }
 
     fun calculateSumOfInvalidIds(): BigInteger {
         var sum = BigInteger.ZERO
-        this.ranges.forEach {
-            sum = sum.add(sumRepeatsInRange(it[0], it[1]))
+        for (range in this.ranges) {
+            var repeatedNumbers = mutableSetOf<BigInteger>()
+            for (repeat in 2..range[1].length) {
+                repeatedNumbers.addAll(findRepeatsInRange(range[0], range[1], repeat))
+            }
+            repeatedNumbers.forEach { number -> sum = sum.add(number) }
         }
         return sum
     }
@@ -49,3 +56,4 @@ fun main() {
     val day02 = AOCDay02(fileInput)
     println(day02.calculateSumOfInvalidIds())
 }
+
