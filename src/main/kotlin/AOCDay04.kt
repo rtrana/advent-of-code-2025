@@ -4,6 +4,7 @@ import kotlin.io.path.readLines
 class AOCDay04(val input: List<String>) {
 
     var locations: Array<Array<Char>> = Array(input.size) { Array(input[0].length) { '.' } }
+    var accessibleLocations: MutableList<List<Int>> = mutableListOf()
 
     init {
         for (i in input.indices) {
@@ -13,15 +14,20 @@ class AOCDay04(val input: List<String>) {
         }
     }
 
-    fun printLocations() {
-        this.locations.forEach {
-            it.forEach { c -> print("$c ") }
-            println()
-        }
+    fun unblockedAccessPoints(): Int {
+        var unblocked = 0
+        do {
+            unblocked += countAccessPoints()
+            for (coordinate in this.accessibleLocations) {
+                this.locations[coordinate[0]][coordinate[1]] = '.'
+            }
+        } while (this.accessibleLocations.isNotEmpty())
+        return unblocked
     }
 
     fun countAccessPoints(): Int {
         var count = 0
+        this.accessibleLocations = mutableListOf()
         for (i in this.locations.indices) {
             for (j in this.locations[0].indices) {
                 count += calculateCountForLocation(i, j)
@@ -33,7 +39,10 @@ class AOCDay04(val input: List<String>) {
     fun calculateCountForLocation(i: Int, j: Int): Int {
         var count = 0
         if (isCorner(i, j)) {
-            if (this.locations[i][j] == '@') count++
+            if (this.locations[i][j] == '@') {
+                count++
+                this.accessibleLocations.add(listOf(i, j))
+            }
         } else if (i == 0)
             count += isAccessible(i, j, listOf(
                 this.locations[i][j-1], this.locations[i][j+1],
@@ -60,7 +69,10 @@ class AOCDay04(val input: List<String>) {
 
     fun isAccessible(i: Int, j: Int, neighbors: List<Char>): Int {
         if (this.locations[i][j] == '.') return 0
-        return neighbors.count { it == '@' }.let { if (it < 4) 1 else 0 }
+        val accessCount = neighbors.count { it == '@' }.let { if (it < 4) 1 else 0 }
+        if (accessCount == 1)
+            this.accessibleLocations.add(listOf(i, j))
+        return accessCount
     }
 
     fun isCorner(i: Int, j: Int): Boolean {
@@ -81,4 +93,5 @@ fun main() {
     val fileInput = Path("src/main/resources/inputDay04a.txt").readLines()
     val day04 = AOCDay04(fileInput)
     println(day04.countAccessPoints())
+    println(day04.unblockedAccessPoints())
 }
